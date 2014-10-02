@@ -1,0 +1,8 @@
+[package]
+
+name = "dual"
+version = "0.1.0"
+authors = [ "mpotanin@gmail.com" ]
+
+[lib]
+name = "dual"
