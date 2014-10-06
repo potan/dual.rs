@@ -583,19 +583,17 @@ impl<T:FloatMath> FloatMath for Dual<T> {
   }
  }
  fn sin(self) -> Dual<T> {
-  match self.val.sin_cos() {
-   (s,c) => Dual {
-             val: s,
-             der: self.der*c
-            }
+  let (s,c) = self.val.sin_cos();
+  Dual {
+   val: s,
+   der: self.der*c
   }
  }
  fn cos(self) -> Dual<T> {
-  match self.val.sin_cos() {
-   (s,c) => Dual {
-             val: c,
-             der: -self.der*s
-            }
+  let (s,c) = self.val.sin_cos();
+  Dual {
+   val: c,
+   der: -self.der*s
   }
  }
  fn tan(self) -> Dual<T> {
@@ -627,15 +625,14 @@ impl<T:FloatMath> FloatMath for Dual<T> {
   (self/other).atan()
  }
  fn sin_cos(self) -> (Dual<T>, Dual<T>) {
-  match self.val.sin_cos() {
-   (s,c) => (Dual {
-             val: s,
-             der: self.der*c
-            }, Dual {
-             val: c,
-             der: -self.der*s
-            })
-  }
+  let (s,c) = self.val.sin_cos();
+  (Dual {
+   val: s,
+   der: self.der*c
+  }, Dual {
+   val: c,
+   der: -self.der*s
+  })
  }
  fn exp_m1(self) -> Dual<T> {
   let d = self.val.exp_m1();
