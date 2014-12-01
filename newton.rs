@@ -7,7 +7,7 @@ use dual::Dual;
 use std::num::*;
 
 fn newton<F:Float>(f: |Dual<F>| -> Dual<F>, s:F, eps:F) -> F {
- let Dual{ val:fx, der:dx } = f(Dual{ val:s, der:One::one() });
+ let Dual{ val:fx, der:dx } = f(Dual{ val:s, der:Float::one() });
  if fx.abs() < eps {
   s
  } else {

@@ -118,38 +118,6 @@ impl<T:Bounded+Zero> Bounded for Dual<T> {
 
 impl<T:Num> Num for Dual<T> {}
 
-impl<T:Signed> Signed for Dual<T> {
- fn abs(&self) -> Dual<T> {
-   if self.is_positive() || self.is_zero() {
-    self+Zero::zero() // XXX: bad implement clone
-   } else if self.is_negative() {
-    -self
-   } else {
-     panic!("Near to zero")
-   }
- }
- fn abs_sub(&self, other: &Dual<T>) -> Dual<T> {
-   (self - *other).abs()
- }
- fn signum(&self) -> Dual<T> {
-  if self.is_positive() {
-   One::one()
-  } else if self.is_negative() {
-   Dual { val:self.val.signum(), der:Zero::zero() }
-  } else if self.der.is_zero() {
-   Zero::zero()
-  } else {
-    panic!("Near to zero")
-  }
- }
- fn is_positive(&self) -> bool {
-  self.val.is_positive()
- }
- fn is_negative(&self) -> bool {
-  self.val.is_negative()
- }
-}
-
 impl<T:ToPrimitive> ToPrimitive for Dual<T> {
  fn to_i64(&self) -> Option<i64> { self.val.to_i64() }
  fn to_u64(&self) -> Option<u64> { self.val.to_u64() }
@@ -186,7 +154,7 @@ impl<T:Clone> Clone for Dual<T> {
 
 impl<T:Primitive> Primitive for Dual<T> { }
 
-impl<T:Float> Float for Dual<T> {
+impl<T:Float+Zero> Float for Dual<T> {
  fn nan() -> Dual<T> {
   Dual {
    val: Float::nan(),
@@ -353,7 +321,7 @@ impl<T:Float> Float for Dual<T> {
  }
  fn powf(self, n: Dual<T>) -> Dual<T> {
   let v = self.val;
-  let r = v.powf(n.val-One::one());
+  let r = v.powf(n.val-Float::one());
   Dual {
    val: r*v,
    der: r*(n.der.mul_add(v*v.ln(),self.der*n.val))
@@ -530,9 +498,56 @@ impl<T:Float> Float for Dual<T> {
    der:self.der.to_radians()
   }
  }
+ fn abs(self) -> Dual<T> {
+   if self.is_positive() || self.is_zero() {
+    self
+   } else if self.is_negative() {
+    -self
+   } else {
+     panic!("Near to zero")
+   }
+ }
+ fn signum(self) -> Dual<T> {
+  if self.is_positive() {
+   Float::one()
+  } else if self.is_negative() {
+   Dual { val:self.val.signum(), der:zero() }
+  } else if self.der.is_zero() {
+   zero()
+  } else {
+    panic!("Near to zero")
+  }
+ }
+ fn is_positive(self) -> bool {
+  self.val.is_positive()
+ }
+ fn is_negative(self) -> bool {
+  self.val.is_negative()
+ }
+ fn zero() -> Dual<T> {
+   Dual {val:zero(), der:zero() }
+ }
+ fn one() -> Dual<T> {
+   Dual {
+    val:Float::one(),
+    der:zero()
+   }
+ }
+ fn min_value() -> Dual<T> {
+  Dual {
+   val: Float::min_value(),
+   der: zero()
+  }
+ }
+ fn max_value() -> Dual<T> {
+  Dual {
+   val: Float::max_value(),
+   der: zero()
+  }
+ }
 }
 
-impl<T:FloatMath> FloatMath for Dual<T> {
+impl<T:FloatMath+Zero+One+Bounded> FloatMath for Dual<T> {
  fn ldexp(x: Dual<T>, exp: int) -> Dual<T> {
    Dual {
     val:FloatMath::ldexp(x.val, exp),
@@ -566,6 +581,9 @@ impl<T:FloatMath> FloatMath for Dual<T> {
   } else {
    self
   }
+ }
+ fn abs_sub(self, other: Dual<T>) -> Dual<T> {
+   (self-other).abs()
  }
  fn cbrt(self) -> Dual<T> {
   let v = self.val.cbrt();
