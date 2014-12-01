@@ -125,7 +125,7 @@ impl<T:Signed> Signed for Dual<T> {
    } else if self.is_negative() {
     -self
    } else {
-     fail!("Near to zero")
+     panic!("Near to zero")
    }
  }
  fn abs_sub(&self, other: &Dual<T>) -> Dual<T> {
@@ -139,7 +139,7 @@ impl<T:Signed> Signed for Dual<T> {
   } else if self.der.is_zero() {
    Zero::zero()
   } else {
-    fail!("Near to zero")
+    panic!("Near to zero")
   }
  }
  fn is_positive(&self) -> bool {
@@ -569,7 +569,7 @@ impl<T:FloatMath> FloatMath for Dual<T> {
  }
  fn cbrt(self) -> Dual<T> {
   let v = self.val.cbrt();
-  let frac_m1_3:T = match NumCast::from(-1f64/3f64) { Some(v) => v, None => fail!("Internal numberic errer") };
+  let frac_m1_3:T = match NumCast::from(-1f64/3f64) { Some(v) => v, None => panic!("Internal numberic errer") };
   Dual {
    val: v,
    der: self.der*frac_m1_3/(v*v)
