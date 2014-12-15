@@ -504,7 +504,10 @@ impl<T:Float+Zero> Float for Dual<T> {
    } else if self.is_negative() {
     -self
    } else {
-     panic!("Near to zero")
+     Dual {
+        val: Float::zero(),
+        der: Float::nan()
+     }
    }
  }
  fn signum(self) -> Dual<T> {
@@ -515,7 +518,7 @@ impl<T:Float+Zero> Float for Dual<T> {
   } else if self.der == Float::zero() || self.der == Float::neg_zero() {
    Float::zero()
   } else {
-    panic!("Near to zero")
+    Float::nan()
   }
  }
  fn is_positive(self) -> bool {
