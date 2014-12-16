@@ -10,7 +10,7 @@ pub struct Dual<T> {
 }
 
 impl<T:Add<T,T>> Add<Dual<T>,Dual<T>> for Dual<T> {
- fn add(&self, rhs: &Dual<T>) -> Dual<T> {
+ fn add(self, rhs: Dual<T>) -> Dual<T> {
   Dual {
    val:self.val+rhs.val,
    der:self.der+rhs.der
@@ -28,7 +28,7 @@ impl<T:Zero> Zero for Dual<T> {
 }
 
 impl<T:Sub<T,T>> Sub<Dual<T>,Dual<T>> for Dual<T> {
- fn sub(&self, rhs:&Dual<T>) -> Dual<T> {
+ fn sub(self, rhs:Dual<T>) -> Dual<T> {
   Dual {
    val:self.val-rhs.val,
    der:self.der-rhs.der
@@ -36,16 +36,16 @@ impl<T:Sub<T,T>> Sub<Dual<T>,Dual<T>> for Dual<T> {
  }
 }
 
-impl<T:Add<T,T>+Mul<T,T>> Mul<Dual<T>,Dual<T>> for Dual<T> {
- fn mul(&self, rhs:&Dual<T>) -> Dual<T> {
+impl<T:Add<T,T>+Mul<T,T>+Clone> Mul<Dual<T>,Dual<T>> for Dual<T> {
+ fn mul(self, rhs:Dual<T>) -> Dual<T> {
   Dual {
-   val:self.val*rhs.val,
+   val:self.val.clone()*rhs.val.clone(),
    der:self.val*rhs.der+rhs.val*self.der
   }
  }
 }
 
-impl<T:One+Zero> One for Dual<T> {
+impl<T:One+Clone+Zero> One for Dual<T> {
  fn one() -> Dual<T> {
    Dual {
     val:One::one(),
@@ -54,17 +54,17 @@ impl<T:One+Zero> One for Dual<T> {
  }
 }
 
-impl<T:Mul<T,T>+Sub<T,T>+Div<T,T>> Div<Dual<T>,Dual<T>> for Dual<T> {
- fn div(&self, rhs:&Dual<T>) -> Dual<T> {
+impl<T:Mul<T,T>+Sub<T,T>+Div<T,T>+Clone> Div<Dual<T>,Dual<T>> for Dual<T> {
+ fn div(self, rhs:Dual<T>) -> Dual<T> {
    Dual {
-    val:self.val/rhs.val,
-    der:self.der/rhs.val-self.val*rhs.der/(rhs.val*rhs.val)
+    val:self.val.clone()/rhs.val.clone(),
+    der:(self.der-self.val*rhs.der/rhs.val.clone())/rhs.val
    }
  }
 }
 
 impl<T:Rem<T,T>+Zero> Rem<Dual<T>,Dual<T>> for Dual<T> {
- fn rem(&self, rhs:&Dual<T>) -> Dual<T> {
+ fn rem(self, rhs:Dual<T>) -> Dual<T> {
    Dual {
     val:self.val % rhs.val,
     der:Zero::zero()
@@ -116,7 +116,7 @@ impl<T:Bounded+Zero> Bounded for Dual<T> {
  }
 }
 
-impl<T:Num> Num for Dual<T> {}
+impl<T:Num+Clone> Num for Dual<T> {}
 
 impl<T:ToPrimitive> ToPrimitive for Dual<T> {
  fn to_i64(&self) -> Option<i64> { self.val.to_i64() }
