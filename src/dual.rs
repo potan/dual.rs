@@ -73,7 +73,7 @@ impl<T:Rem<T,T>+Zero> Rem<Dual<T>,Dual<T>> for Dual<T> {
 }
 
 impl<T:Neg<T>> Neg<Dual<T>> for Dual<T> {
- fn neg(&self) -> Dual<T> {
+ fn neg(self) -> Dual<T> {
    Dual {
     val: -self.val,
     der: -self.der
