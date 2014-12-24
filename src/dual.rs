@@ -191,7 +191,7 @@ impl<T:Float+Zero> Float for Dual<T> {
  fn is_normal(self) -> bool {
   self.val.is_normal()
  }
- fn classify(self) -> FPCategory {
+ fn classify(self) -> FpCategory {
   self.val.classify()
  }
 #[allow(unused_variables)]
