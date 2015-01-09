@@ -1,16 +1,17 @@
 
-#![feature(globs)]
-
 use std::num::*;
+use std::ops::*;
 use std::cmp::PartialEq;
+use std::cmp::Ordering;
 
 pub struct Dual<T> {
   pub val:T,
   pub der:T
 }
 
-impl<T:Add<T,T>> Add<Dual<T>,Dual<T>> for Dual<T> {
- fn add(self, rhs: Dual<T>) -> Dual<T> {
+impl<T:Add<T>> Add<Dual<T>> for Dual<T> {
+ type Output = Dual<<T as Add<T>>::Output> ;
+ fn add(self, rhs: Dual<T>) -> Dual<<T as Add<T>>::Output> {
   Dual {
    val:self.val+rhs.val,
    der:self.der+rhs.der
@@ -18,17 +19,9 @@ impl<T:Add<T,T>> Add<Dual<T>,Dual<T>> for Dual<T> {
  }
 }
 
-impl<T:Zero> Zero for Dual<T> {
- fn zero() -> Dual<T> {
-   Dual {val:Zero::zero(), der:Zero::zero() }
- }
- fn is_zero(&self) -> bool {
-   self.val.is_zero() && self.der.is_zero()
- }
-}
-
-impl<T:Sub<T,T>> Sub<Dual<T>,Dual<T>> for Dual<T> {
- fn sub(self, rhs:Dual<T>) -> Dual<T> {
+impl<T:Sub<T>> Sub<Dual<T>> for Dual<T> {
+ type Output = Dual<<T as Sub<T>>::Output> ;
+ fn sub(self, rhs:Dual<T>) -> Dual<<T as Sub<T>>::Output> {
   Dual {
    val:self.val-rhs.val,
    der:self.der-rhs.der
@@ -36,44 +29,39 @@ impl<T:Sub<T,T>> Sub<Dual<T>,Dual<T>> for Dual<T> {
  }
 }
 
-impl<T:Add<T,T>+Mul<T,T>+Clone> Mul<Dual<T>,Dual<T>> for Dual<T> {
- fn mul(self, rhs:Dual<T>) -> Dual<T> {
+impl<T:Float /*Add<T>+Mul<T>+Clone*/> Mul<Dual<T>> for Dual<T> {
+ type Output = Dual<<T as Mul<T>>::Output> ;
+ fn mul(self, rhs:Dual<T>) -> Dual<<T as Mul<T>>::Output> {
   Dual {
-   val:self.val.clone()*rhs.val.clone(),
+   val:self.val*rhs.val,
    der:self.val*rhs.der+rhs.val*self.der
   }
  }
 }
 
-impl<T:One+Clone+Zero> One for Dual<T> {
- fn one() -> Dual<T> {
+impl<T:Float /*Mul<T>+Sub<T>+Div<T>+Clone*/> Div<Dual<T>> for Dual<T> {
+ type Output = Dual<<T as Div<T>>::Output> ;
+ fn div(self, rhs:Dual<T>) -> Dual<<T as Div<T>>::Output> {
    Dual {
-    val:One::one(),
-    der:Zero::zero()
+    val:self.val/rhs.val,
+    der:(self.der-self.val*rhs.der/rhs.val)/rhs.val
    }
  }
 }
 
-impl<T:Mul<T,T>+Sub<T,T>+Div<T,T>+Clone> Div<Dual<T>,Dual<T>> for Dual<T> {
- fn div(self, rhs:Dual<T>) -> Dual<T> {
-   Dual {
-    val:self.val.clone()/rhs.val.clone(),
-    der:(self.der-self.val*rhs.der/rhs.val.clone())/rhs.val
-   }
- }
-}
-
-impl<T:Rem<T,T>+Zero> Rem<Dual<T>,Dual<T>> for Dual<T> {
- fn rem(self, rhs:Dual<T>) -> Dual<T> {
+impl<T:Float> Rem<Dual<T>> for Dual<T> {
+ type Output = Dual<<T as Rem<T>>::Output> ;
+ fn rem(self, rhs:Dual<T>) -> Dual<<T as Rem<T>>::Output> {
    Dual {
     val:self.val % rhs.val,
-    der:Zero::zero()
+    der:Float::zero()
    }
  }
 }
 
-impl<T:Neg<T>> Neg<Dual<T>> for Dual<T> {
- fn neg(self) -> Dual<T> {
+impl<T:Neg> Neg for Dual<T> {
+ type Output = Dual<<T as Neg>::Output> ;
+ fn neg(self) -> Dual<<T as Neg>::Output> {
    Dual {
     val: -self.val,
     der: -self.der
@@ -101,7 +89,8 @@ impl<T:PartialOrd> PartialOrd for Dual<T> {
 
 impl<T:Copy> Copy for Dual<T> { }
 
-impl<T:Bounded+Zero> Bounded for Dual<T> {
+/*
+impl<T:Bounded> Bounded for Dual<T> {
  fn min_value() -> Dual<T> {
   Dual {
    val: Bounded::min_value(),
@@ -115,8 +104,8 @@ impl<T:Bounded+Zero> Bounded for Dual<T> {
   }
  }
 }
-
 impl<T:Num+Clone> Num for Dual<T> {}
+*/
 
 impl<T:ToPrimitive> ToPrimitive for Dual<T> {
  fn to_i64(&self) -> Option<i64> { self.val.to_i64() }
@@ -134,10 +123,10 @@ impl<T:ToPrimitive> ToPrimitive for Dual<T> {
  fn to_f64(&self) -> Option<f64> { self.val.to_f64() }
 }
 
-impl<T:NumCast+Zero> NumCast for Dual<T> {
+impl<T:Float /*NumCast*/> NumCast for Dual<T> {
  fn from<N: ToPrimitive>(n: N) -> Option<Dual<T>> {
    match NumCast::from(n) {
-    Some(v) => Some( Dual { val:v, der:Zero::zero() } ), 
+    Some(v) => Some( Dual { val:v, der:Float::zero() } ), 
     None => None
   }
  }
@@ -152,9 +141,7 @@ impl<T:Clone> Clone for Dual<T> {
  }
 }
 
-impl<T:Primitive> Primitive for Dual<T> { }
-
-impl<T:Float+Zero> Float for Dual<T> {
+impl<T:Float> Float for Dual<T> {
  fn nan() -> Dual<T> {
   Dual {
    val: Float::nan(),
@@ -327,6 +314,7 @@ impl<T:Float+Zero> Float for Dual<T> {
    der: r*(n.der.mul_add(v*v.ln(),self.der*n.val))
   }
  }
+/*
  fn sqrt2() -> Dual<T> {
   Dual {
    val:Float::sqrt2(),
@@ -339,6 +327,7 @@ impl<T:Float+Zero> Float for Dual<T> {
    der:Float::zero()
   }
  }
+*/
  fn sqrt(self) -> Dual<T> {
   let s = self.val.sqrt();
   Dual {
@@ -354,6 +343,7 @@ impl<T:Float+Zero> Float for Dual<T> {
    der: -self.der*s/(v+v)
   }
  }
+/*
  fn pi() -> Dual<T> {
   Dual {
    val:Float::pi(),
@@ -444,6 +434,7 @@ impl<T:Float+Zero> Float for Dual<T> {
    der: Float::zero()
   }
  }
+*/
  fn exp(self) -> Dual<T> {
   let v = self.val.exp();
   Dual {
@@ -453,9 +444,10 @@ impl<T:Float+Zero> Float for Dual<T> {
  }
  fn exp2(self) -> Dual<T> {
   let v = self.val.exp2();
+  let o:T = Float::one();
   Dual {
    val:v,
-   der:self.der*v*Float::ln_2()
+   der:self.der*v*((o + o).ln()) //Float::ln_2()
   }
  }
  fn ln(self) -> Dual<T> {
@@ -475,15 +467,19 @@ impl<T:Float+Zero> Float for Dual<T> {
   }
  }
  fn log2(self) -> Dual<T> {
+  let o:T = Float::one();
   Dual {
    val:self.val.log2(),
-   der:self.der*Float::ln_2()/self.val
+   der:self.der*((o + o).ln())/self.val
   }
  }
  fn log10(self) -> Dual<T> {
+  let o:T = Float::one();
+  let five:T = o+o+o+o+o;
+  let ten = five+five;
   Dual {
    val:self.val.log10(),
-   der:self.der*Float::ln_10()/self.val
+   der:self.der*(ten.ln())/self.val
   }
  }
  fn to_degrees(self) -> Dual<T> {
@@ -548,20 +544,17 @@ impl<T:Float+Zero> Float for Dual<T> {
    der: Float::zero()
   }
  }
-}
-
-impl<T:FloatMath+Zero> FloatMath for Dual<T> {
  fn ldexp(x: Dual<T>, exp: int) -> Dual<T> {
    Dual {
-    val:FloatMath::ldexp(x.val, exp),
-    der:FloatMath::ldexp(x.der, exp)
+    val:Float::ldexp(x.val, exp),
+    der:Float::ldexp(x.der, exp)
    }
  }
  fn frexp(self) -> (Dual<T>, int) {
   match self.val.frexp() {
    (v,p) => (Dual {
               val: v,
-              der: FloatMath::ldexp(self.der, -p)
+              der: Float::ldexp(self.der, -p)
              }, p)
   }
  }

@@ -1,6 +1,4 @@
 
-#![feature(globs)]
-
 extern crate dual;
 
 fn main() {
