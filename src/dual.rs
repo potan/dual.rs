@@ -111,11 +111,11 @@ impl<T:ToPrimitive> ToPrimitive for Dual<T> {
  fn to_i64(&self) -> Option<i64> { self.val.to_i64() }
  fn to_u64(&self) -> Option<u64> { self.val.to_u64() }
 
- fn to_int(&self) -> Option<int> { self.val.to_int() }
+ fn to_int(&self) -> Option<isize> { self.val.to_int() }
  fn to_i8(&self) -> Option<i8> { self.val.to_i8() }
  fn to_i16(&self) -> Option<i16> { self.val.to_i16() }
  fn to_i32(&self) -> Option<i32> { self.val.to_i32() }
- fn to_uint(&self) -> Option<uint> { self.val.to_uint() }
+ fn to_uint(&self) -> Option<usize> { self.val.to_uint() }
  fn to_u8(&self) -> Option<u8> { self.val.to_u8() }
  fn to_u16(&self) -> Option<u16> { self.val.to_u16() }
  fn to_u32(&self) -> Option<u32> { self.val.to_u32() }
@@ -182,12 +182,12 @@ impl<T:Float> Float for Dual<T> {
   self.val.classify()
  }
 #[allow(unused_variables)]
- fn mantissa_digits(_unused_self: Option<Dual<T>>) -> uint {
+ fn mantissa_digits(_unused_self: Option<Dual<T>>) -> usize {
   let n: Option<T> = None;
   Float::mantissa_digits(n)
  }
 #[allow(unused_variables)]
- fn digits(_unused_self: Option<Dual<T>>) -> uint {
+ fn digits(_unused_self: Option<Dual<T>>) -> usize {
   let n: Option<T> = None;
   Float::digits(n)
  }
@@ -198,22 +198,22 @@ impl<T:Float> Float for Dual<T> {
   }
  }
 #[allow(unused_variables)]
- fn min_exp(_unused_self: Option<Dual<T>>) -> int {
+ fn min_exp(_unused_self: Option<Dual<T>>) -> isize {
   let n: Option<T> = None;
   Float::min_exp(n)
  }
 #[allow(unused_variables)]
- fn max_exp(_unused_self: Option<Dual<T>>) -> int {
+ fn max_exp(_unused_self: Option<Dual<T>>) -> isize {
   let n: Option<T> = None;
   Float::max_exp(n)
  }
 #[allow(unused_variables)]
- fn min_10_exp(_unused_self: Option<Dual<T>>) -> int {
+ fn min_10_exp(_unused_self: Option<Dual<T>>) -> isize {
   let n: Option<T> = None;
   Float::min_10_exp(n)
  }
 #[allow(unused_variables)]
- fn max_10_exp(_unused_self: Option<Dual<T>>) -> int {
+ fn max_10_exp(_unused_self: Option<Dual<T>>) -> isize {
   let n: Option<T> = None;
   Float::max_10_exp(n)
  }
@@ -544,13 +544,13 @@ impl<T:Float> Float for Dual<T> {
    der: Float::zero()
   }
  }
- fn ldexp(x: Dual<T>, exp: int) -> Dual<T> {
+ fn ldexp(x: Dual<T>, exp: isize) -> Dual<T> {
    Dual {
     val:Float::ldexp(x.val, exp),
     der:Float::ldexp(x.der, exp)
    }
  }
- fn frexp(self) -> (Dual<T>, int) {
+ fn frexp(self) -> (Dual<T>, isize) {
   match self.val.frexp() {
    (v,p) => (Dual {
               val: v,
