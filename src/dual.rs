@@ -81,7 +81,7 @@ impl<T:PartialEq> PartialEq for Dual<T> {
 impl<T:PartialOrd> PartialOrd for Dual<T> {
  fn partial_cmp(&self, other: &Dual<T>) -> Option<Ordering> {
   match self.val.partial_cmp(&other.val) {
-   Some(Equal) => self.der.partial_cmp(&other.der), // XXX It is righr?
+   Some(Ordering::Equal) => self.der.partial_cmp(&other.der), // XXX It is righr?
    res => res
   }
  }
