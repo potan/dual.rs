@@ -1,8 +1,12 @@
 
+extern crate onezero;
+
 use std::num::*;
 use std::ops::*;
 use std::cmp::PartialEq;
 use std::cmp::Ordering;
+
+use onezero::{One, Zero};
 
 pub struct Dual<T> {
   pub val:T,
@@ -25,6 +29,24 @@ impl<T:Sub<T>> Sub<Dual<T>> for Dual<T> {
   Dual {
    val:self.val-rhs.val,
    der:self.der-rhs.der
+  }
+ }
+}
+
+impl<T:Zero> Zero for Dual<T> {
+ fn zero() -> Dual<T> {
+  Dual {
+   val: Zero::zero(),
+   der: Zero::zero()
+  }
+ }
+}
+
+impl<T:Zero+One> One for Dual<T> {
+ fn one() -> Dual<T> {
+  Dual {
+   val: One::one(),
+   der: Zero::zero()
   }
  }
 }

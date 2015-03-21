@@ -1,8 +1,11 @@
 [package]
 
 name = "dual"
-version = "0.1.4"
+version = "0.1.5"
 authors = [ "mpotanin@gmail.com" ]
 
 [lib]
 name = "dual"
+
+[dependencies.onezero]
+git = "https://github.com/japaric/onezero.rs"
