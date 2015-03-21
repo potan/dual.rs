@@ -544,10 +544,10 @@ impl<T:Float> Float for Dual<T> {
    der: Float::zero()
   }
  }
- fn ldexp(x: Dual<T>, exp: isize) -> Dual<T> {
+ fn ldexp(self, exp: isize) -> Dual<T> {
    Dual {
-    val:Float::ldexp(x.val, exp),
-    der:Float::ldexp(x.der, exp)
+    val:self.val.ldexp(exp),
+    der:self.der.ldexp(exp)
    }
  }
  fn frexp(self) -> (Dual<T>, isize) {
