@@ -1,12 +1,16 @@
 
-extern crate onezero;
+#![feature(zero_one)]
+#![feature(core)]
+#![feature(std_misc)]
+
+//extern crate onezero;
 
 use std::num::*;
 use std::ops::*;
 use std::cmp::PartialEq;
 use std::cmp::Ordering;
 
-use onezero::{One, Zero};
+//use onezero::{One, Zero};
 
 pub struct Dual<T> {
   pub val:T,
