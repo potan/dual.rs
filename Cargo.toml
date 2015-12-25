@@ -5,7 +5,7 @@ description = "Dual numbers"
 version = "0.2.0"
 authors = [ "mpotanin@gmail.com" ]
 repository = "https://github.com/potan/dual.rs"
-license = "GPL"
+license = "LGPL-3.0"
 
 [lib]
 name = "dual"
