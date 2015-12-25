@@ -1,11 +1,13 @@
 
-#![feature(zero_one)]
-#![feature(core)]
-#![feature(std_misc)]
+//#![feature(zero_one)]
+//#![feature(core)]
+//#![feature(std_misc)]
 
 //extern crate onezero;
+extern crate num;
 
-use std::num::*;
+use num::*;
+use std::num::FpCategory;
 use std::ops::*;
 use std::cmp::PartialEq;
 use std::cmp::Ordering;
@@ -44,9 +46,22 @@ impl<T:Zero> Zero for Dual<T> {
    der: Zero::zero()
   }
  }
+ fn is_zero(&self) -> bool {
+  self.val.is_zero()
+ }
 }
 
-impl<T:Zero+One> One for Dual<T> {
+impl<T:Num+Float> Num for Dual<T> {
+  type FromStrRadixErr = T::FromStrRadixErr;
+  fn from_str_radix(str: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr> {
+    let s:Vec<_> = str.split("?").collect();
+    let v = try! { Num::from_str_radix(s[0], radix) };
+    let d = try! { Num::from_str_radix(s[1], radix) };
+    Ok(Dual { val: v, der: d })
+  }
+}
+
+impl<T:Zero+One+Float> One for Dual<T> {
  fn one() -> Dual<T> {
   Dual {
    val: One::one(),
@@ -80,7 +95,7 @@ impl<T:Float> Rem<Dual<T>> for Dual<T> {
  fn rem(self, rhs:Dual<T>) -> Dual<<T as Rem<T>>::Output> {
    Dual {
     val:self.val % rhs.val,
-    der:Float::zero()
+    der:Zero::zero()
    }
  }
 }
@@ -137,11 +152,11 @@ impl<T:ToPrimitive> ToPrimitive for Dual<T> {
  fn to_i64(&self) -> Option<i64> { self.val.to_i64() }
  fn to_u64(&self) -> Option<u64> { self.val.to_u64() }
 
- fn to_int(&self) -> Option<isize> { self.val.to_int() }
+// fn to_int(&self) -> Option<isize> { self.val.to_int() }
  fn to_i8(&self) -> Option<i8> { self.val.to_i8() }
  fn to_i16(&self) -> Option<i16> { self.val.to_i16() }
  fn to_i32(&self) -> Option<i32> { self.val.to_i32() }
- fn to_uint(&self) -> Option<usize> { self.val.to_uint() }
+// fn to_uint(&self) -> Option<usize> { self.val.to_uint() }
  fn to_u8(&self) -> Option<u8> { self.val.to_u8() }
  fn to_u16(&self) -> Option<u16> { self.val.to_u16() }
  fn to_u32(&self) -> Option<u32> { self.val.to_u32() }
@@ -149,10 +164,10 @@ impl<T:ToPrimitive> ToPrimitive for Dual<T> {
  fn to_f64(&self) -> Option<f64> { self.val.to_f64() }
 }
 
-impl<T:Float /*NumCast*/> NumCast for Dual<T> {
+impl<T:NumCast+Zero> NumCast for Dual<T> {
  fn from<N: ToPrimitive>(n: N) -> Option<Dual<T>> {
    match NumCast::from(n) {
-    Some(v) => Some( Dual { val:v, der:Float::zero() } ), 
+    Some(v) => Some( Dual { val:v, der: Zero::zero() } ), 
     None => None
   }
  }
@@ -177,19 +192,37 @@ impl<T:Float> Float for Dual<T> {
  fn infinity() -> Dual<T> {
   Dual {
    val: Float::infinity(),
-   der: Float::zero()
+   der: Zero::zero()
   }
  }
  fn neg_infinity() -> Dual<T> {
   Dual {
    val: Float::neg_infinity(),
-   der: Float::zero()
+   der: Zero::zero()
   }
  }
  fn neg_zero() -> Dual<T> {
   Dual {
    val: Float::neg_zero(),
-   der: Float::zero()
+   der: Zero::zero()
+  }
+ }
+ fn min_value() -> Dual<T> {
+  Dual {
+   val: Float::min_value(),
+   der: Zero::zero()
+  }
+ }
+ fn min_positive_value() -> Dual<T> {
+  Dual {
+   val: Float::min_positive_value(),
+   der: Zero::zero()
+  }
+ }
+ fn max_value() -> Dual<T> {
+  Dual {
+   val: Float::max_value(),
+   der: Zero::zero()
   }
  }
  fn is_nan(self) -> bool {
@@ -207,7 +240,7 @@ impl<T:Float> Float for Dual<T> {
  fn classify(self) -> FpCategory {
   self.val.classify()
  }
-#[allow(unused_variables)]
+/*#[allow(unused_variables)]
  fn mantissa_digits(_unused_self: Option<Dual<T>>) -> usize {
   let n: Option<T> = None;
   Float::mantissa_digits(n)
@@ -248,9 +281,10 @@ impl<T:Float> Float for Dual<T> {
   let n: Option<T> = None;
   Dual {
    val: Float::min_pos_value(n),
-   der: Float::zero()
+   der: Zero::zero()
   }
  }
+*/
  fn integer_decode(self) -> (u64, i16, i8) {
   self.val.integer_decode()
  }
@@ -261,7 +295,7 @@ impl<T:Float> Float for Dual<T> {
    der: if i == self.val {
     Float::infinity()
    } else {
-    Float::zero()
+    Zero::zero()
    }
   }
  }
@@ -272,7 +306,7 @@ impl<T:Float> Float for Dual<T> {
    der: if i == self.val {
     Float::infinity()
    } else {
-    Float::zero()
+    Zero::zero()
    }
   }
  }
@@ -283,7 +317,7 @@ impl<T:Float> Float for Dual<T> {
    der: if i == self.val {
     Float::infinity()
    } else {
-    Float::zero()
+    Zero::zero()
    }
   }
  }
@@ -294,7 +328,7 @@ impl<T:Float> Float for Dual<T> {
    der: if i == self.val {
     Float::infinity()
    } else {
-    Float::zero()
+    Zero::zero()
    }
   }
  }
@@ -302,10 +336,10 @@ impl<T:Float> Float for Dual<T> {
   let i = self.val.fract();
   Dual {
    val: i,
-   der: if i == Float::zero()  {
+   der: if i.is_zero()  {
     Float::neg_infinity()
    } else {
-    Float::zero()
+    Zero::zero()
    }
   }
  }
@@ -334,7 +368,7 @@ impl<T:Float> Float for Dual<T> {
  }
  fn powf(self, n: Dual<T>) -> Dual<T> {
   let v = self.val;
-  let r = v.powf(n.val-Float::one());
+  let r = v.powf(n.val-One::one());
   Dual {
    val: r*v,
    der: r*(n.der.mul_add(v*v.ln(),self.der*n.val))
@@ -344,13 +378,13 @@ impl<T:Float> Float for Dual<T> {
  fn sqrt2() -> Dual<T> {
   Dual {
    val:Float::sqrt2(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn frac_1_sqrt2() -> Dual<T> {
   Dual {
    val:Float::frac_1_sqrt2(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
 */
@@ -361,7 +395,7 @@ impl<T:Float> Float for Dual<T> {
    der:self.der/(s+s)  // 2.0*s
   }
  }
- fn rsqrt(self) -> Dual<T> {
+/* fn rsqrt(self) -> Dual<T> {
   let v = self.val;
   let s = v.rsqrt();
   Dual {
@@ -369,95 +403,96 @@ impl<T:Float> Float for Dual<T> {
    der: -self.der*s/(v+v)
   }
  }
+*/
 /*
  fn pi() -> Dual<T> {
   Dual {
    val:Float::pi(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn two_pi() -> Dual<T> {
   Dual {
    val:Float::two_pi(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn frac_pi_2() -> Dual<T> {
   Dual {
    val:Float::frac_pi_2(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn frac_pi_3() -> Dual<T> {
   Dual {
    val:Float::frac_pi_3(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn frac_pi_4() -> Dual<T> {
   Dual {
    val:Float::frac_pi_4(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn frac_pi_6() -> Dual<T> {
   Dual {
    val:Float::frac_pi_6(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn frac_pi_8() -> Dual<T> {
   Dual {
    val:Float::frac_pi_8(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn frac_1_pi() -> Dual<T> {
   Dual {
    val:Float::frac_1_pi(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn frac_2_pi() -> Dual<T> {
   Dual {
    val:Float::frac_2_pi(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn frac_2_sqrtpi() -> Dual<T> {
   Dual {
    val:Float::frac_2_sqrtpi(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn e() -> Dual<T> {
   Dual {
    val:Float::e(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn log2_e() -> Dual<T> {
   Dual {
    val:Float::log2_e(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn log10_e() -> Dual<T> {
   Dual {
    val:Float::log10_e(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn ln_2() -> Dual<T> {
   Dual {
    val:Float::ln_2(),
-   der:Float::zero()
+   der:Zero::zero()
   }
  }
  fn ln_10() -> Dual<T> {
   Dual {
    val: Float::ln_10(),
-   der: Float::zero()
+   der: Zero::zero()
   }
  }
 */
@@ -470,7 +505,7 @@ impl<T:Float> Float for Dual<T> {
  }
  fn exp2(self) -> Dual<T> {
   let v = self.val.exp2();
-  let o:T = Float::one();
+  let o:T = One::one();
   Dual {
    val:v,
    der:self.der*v*((o + o).ln()) //Float::ln_2()
@@ -493,14 +528,14 @@ impl<T:Float> Float for Dual<T> {
   }
  }
  fn log2(self) -> Dual<T> {
-  let o:T = Float::one();
+  let o:T = One::one();
   Dual {
    val:self.val.log2(),
    der:self.der*((o + o).ln())/self.val
   }
  }
  fn log10(self) -> Dual<T> {
-  let o:T = Float::one();
+  let o:T = One::one();
   let five:T = o+o+o+o+o;
   let ten = five+five;
   Dual {
@@ -508,6 +543,7 @@ impl<T:Float> Float for Dual<T> {
    der:self.der*(ten.ln())/self.val
   }
  }
+/*
  fn to_degrees(self) -> Dual<T> {
   Dual {
    val:self.val.to_degrees(),
@@ -520,56 +556,48 @@ impl<T:Float> Float for Dual<T> {
    der:self.der.to_radians()
   }
  }
+*/
  fn abs(self) -> Dual<T> {
-   if self.is_positive() || self == Float::zero() {
+   if self.is_sign_positive() || self.is_zero() {
     self
-   } else if self.is_negative() {
+   } else if self.is_sign_negative() {
     -self
    } else {
      Dual {
-        val: Float::zero(),
+        val: Zero::zero(),
         der: Float::nan()
      }
    }
  }
  fn signum(self) -> Dual<T> {
-  if self.is_positive() {
-   Float::one()
-  } else if self.is_negative() {
-   Dual { val:self.val.signum(), der:Float::zero() }
-  } else if self.der == Float::zero() || self.der == Float::neg_zero() {
-   Float::zero()
+  if self.is_sign_positive() {
+   One::one()
+  } else if self.is_sign_negative() {
+   Dual { val:self.val.signum(), der:Zero::zero() }
+  } else if self.der == Zero::zero() || self.der == Float::neg_zero() {
+   Zero::zero()
   } else {
     Float::nan()
   }
  }
- fn is_positive(self) -> bool {
-  self.val.is_positive()
+ fn is_sign_positive(self) -> bool {
+  self.val.is_sign_positive()
  }
- fn is_negative(self) -> bool {
-  self.val.is_negative()
+ fn is_sign_negative(self) -> bool {
+  self.val.is_sign_negative()
  }
+/*
  fn zero() -> Dual<T> {
-   Dual {val: Float::zero(), der: Float::zero() }
+   Dual {val: Zero::zero(), der: Zero::zero() }
  }
  fn one() -> Dual<T> {
    Dual {
-    val: Float::one(),
-    der: Float::zero()
+    val: One::one(),
+    der: Zero::zero()
    }
  }
- fn min_value() -> Dual<T> {
-  Dual {
-   val: Float::min_value(),
-   der: Float::zero()
-  }
- }
- fn max_value() -> Dual<T> {
-  Dual {
-   val: Float::max_value(),
-   der: Float::zero()
-  }
- }
+*/
+/*
  fn ldexp(self, exp: isize) -> Dual<T> {
    Dual {
     val:self.val.ldexp(exp),
@@ -590,6 +618,7 @@ impl<T:Float> Float for Dual<T> {
    der: self.der
   }
  }
+*/
  fn max(self, other: Dual<T>) -> Dual<T> {
   if self < other {
    other
@@ -646,19 +675,19 @@ impl<T:Float> Float for Dual<T> {
  fn asin(self) -> Dual<T> {
   Dual {
    val: self.val.asin(),
-   der: self.der/self.val.mul_add(-self.val, Float::one()).sqrt()
+   der: self.der/self.val.mul_add(-self.val, One::one()).sqrt()
   }
  }
  fn acos(self) -> Dual<T> {
   Dual {
    val: self.val.acos(),
-   der: -self.der/self.val.mul_add(-self.val, Float::one()).sqrt()
+   der: -self.der/self.val.mul_add(-self.val, One::one()).sqrt()
   }
  }
  fn atan(self) -> Dual<T> {
   Dual {
    val: self.val.atan(),
-   der: self.der/self.val.mul_add(self.val,Float::one())
+   der: self.der/self.val.mul_add(self.val,One::one())
   }
  }
  fn atan2(self, other: Dual<T>) -> Dual<T> {
@@ -682,7 +711,7 @@ impl<T:Float> Float for Dual<T> {
   }
  }
  fn ln_1p(self) -> Dual<T> {
-  let o:T = Float::one();
+  let o:T = One::one();
   Dual {
    val: self.val.ln_1p(),
    der: self.der/(o+self.val)
@@ -710,11 +739,11 @@ impl<T:Float> Float for Dual<T> {
  fn asinh(self) -> Dual<T> {
   Dual {
    val: self.val.asinh(),
-   der: self.der/self.val.mul_add(self.val,Float::one()).sqrt()
+   der: self.der/self.val.mul_add(self.val,One::one()).sqrt()
   }
  }
  fn acosh(self) -> Dual<T> {
-  let o:T = Float::one();
+  let o:T = One::one();
   let mo:T = -o;
   Dual {
    val: self.val.acosh(),
@@ -724,7 +753,7 @@ impl<T:Float> Float for Dual<T> {
  fn atanh(self) -> Dual<T> {
   Dual {
    val: self.val.atanh(),
-   der: self.der/self.val.mul_add(-self.val,Float::one())
+   der: self.der/self.val.mul_add(-self.val,One::one())
   }
  }
 }

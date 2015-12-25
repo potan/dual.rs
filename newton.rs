@@ -1,11 +1,12 @@
 
 extern crate dual;
+extern crate num;
 use dual::Dual;
 
-use std::num::*;
+use num::*;
 
 fn newton<F:Float, Fun:Fn(Dual<F>)->Dual<F>>(f:Fun, s:F, eps:F) -> F {
- let Dual{ val:fx, der:dx } = f(Dual{ val:s, der:Float::one() });
+ let Dual{ val:fx, der:dx } = f(Dual{ val:s, der:One::one() });
  if fx.abs() < eps {
   s
  } else {
