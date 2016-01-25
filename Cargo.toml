@@ -11,7 +11,7 @@ license = "LGPL-3.0"
 name = "dual"
 
 [dependencies]
-num = "*" #"0.1"
+num = "0.1"
 
 #[dependencies.onezero]
 #git = "https://github.com/japaric/onezero.rs"
